@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import { getTicketsData } from '../model/ticket.model.js';
+import { parseTicketsData } from '../utils/csv-parser.js';
 
 export const getTickets = async (req: Request, res: Response) => {
     try {
-        const tickets = await getTicketsData();
+        const tickets = await parseTicketsData('./data/tickets.csv');
         res.status(200).json(tickets);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching Tickets" });
+        res.status(500).json({ error: 'Failed to parse tickets'  });
     }
 }
 

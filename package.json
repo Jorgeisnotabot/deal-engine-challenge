@@ -1,0 +1,27 @@
+{
+  "name": "deal-engine-challenge",
+  "version": "0.0.5",
+  "description": "",
+  "main": "backend/dist/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/dist/server.js",
+    "dev": "nodemon --exec tsx backend/src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Jorge Domínguez Galván",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.4",
+    "nodemon": "^3.1.7",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}

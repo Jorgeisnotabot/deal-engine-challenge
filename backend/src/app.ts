@@ -1,9 +1,7 @@
-import express, { type Request, type Response } from "express"
+import express from "express"
 import { config } from 'dotenv';
 import ticketRouter from "./routes/ticket.route.js";
 import airportRoute from "./routes/airport.route.js";
-
-
 config();
 
 export const app = express();

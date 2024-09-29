@@ -28,3 +28,8 @@ export interface CSVRow {
     destination_latitude: number	
     destination_longitude: number
 }
+
+export interface Weather {
+    temperature: number;
+    
+}

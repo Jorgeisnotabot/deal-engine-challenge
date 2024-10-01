@@ -1,13 +1,14 @@
-import { getWeatherData } from '../services/weather-service.js';
+// Test getCachedWeatherData function
 
+import { getCachedWeatherData } from "../controller/weather.controller.js";
 
-describe('Integration test for getWeatherData', () => {
+describe('Unit test for getCachedWeatherData', () => {
     const mockLat = 19.4363;
     const mockLon = -99.0721;
 
-    it('should fetch data from OpenWeather API', async () => {
+    it('should fetch data from OpenWeather API and cache it', async () => {
         try {
-            const response = await getWeatherData(mockLat, mockLon);
+            const response = await getCachedWeatherData(mockLat, mockLon);
             expect(response).toBeDefined();
             expect(response.weather).toBeInstanceOf(Array);
             expect(response.main).toHaveProperty('temp');
@@ -16,8 +17,6 @@ describe('Integration test for getWeatherData', () => {
         } catch (error) {
             console.error('Error while fetching weather data:', error);
             throw new Error('Failed to fetch weather data from OpenWeather API');
-
         }
-    }
-    )
+    })
 })

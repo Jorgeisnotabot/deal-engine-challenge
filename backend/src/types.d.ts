@@ -31,5 +31,15 @@ export interface CSVRow {
 
 export interface Weather {
     temperature: number;
-    
+    description: string;  
+    humidity: number;
+    windSpeed: number;  
+}
+
+// Weather Report
+
+export interface WeatherReport {
+    ticket: Ticket;
+    originWeather: Weather;
+    destinationWeather: Weather;
 }

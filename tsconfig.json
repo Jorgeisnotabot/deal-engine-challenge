@@ -16,7 +16,6 @@
     },
     "include": [
       "./backend/src/**/*.ts",
-      "./backend/tests/**/*.ts"
     ],
     "exclude": [
       "./node_modules",

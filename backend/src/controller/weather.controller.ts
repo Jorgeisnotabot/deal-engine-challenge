@@ -1,32 +1,23 @@
-import { getCachedWeatherData } from "../services/weather-service.js";
-import { Ticket, WeatherReport } from "../types.js";
+import { Request, Response } from "express";
+import { getWeatherForAllTickets } from "../services/weather-service.js";
+import { Ticket } from "../types.js";
 
-// Get weather data for a list of tickets
-// This function needs to improve performance by fetching weather data for all tickets in parallel using Promise.all
-
-// Fetch weather data for all tickets in parallel
-export const getWeatherForAllTickets = async (tickets: Ticket[]): Promise<WeatherReport[]> => {
-    // Map each ticket to a promise that fetches weather data for both origin and destination airports
-    const weatherPromises = tickets.map(async (ticket) => {
-        const originWeatherData = await getCachedWeatherData(ticket.originAirport.latitude, ticket.originAirport.longitude);
-        const destinationWeatherData = await getCachedWeatherData(ticket.destinationAirport.latitude, ticket.destinationAirport.longitude);
-        return {
-            ticket,
-            originWeather: originWeatherData,
-            destinationWeather: destinationWeatherData
-        } as WeatherReport;
-    });
-
-    // Use Promise.all to resolve all promises in parallel
-
+export const getWeatherReportsController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const weatherResults = await Promise.all(weatherPromises);
-        return weatherResults;
+        const tickets: Ticket[] = req.body.tickets;
+
+        if (!tickets || tickets.length === 0) {
+            res.status(400).json({ message: "Tickets are required" });
+            return;
+        }
+
+        // Get weather data for all tickets
+        const weatherReports = await getWeatherForAllTickets(tickets);
+
+        // Send the weather reports in the response
+        res.status(200).json(weatherReports);
     } catch (error) {
-        console.error("Failed to fetch weather data", error);
-        throw new Error("Failed to fetch weather data");
+        console.error("Error getting weather reports:", error);
+        res.status(500).json({ message: "Failed to fetch weather reports" });
     }
-
-   
-}
-
+};

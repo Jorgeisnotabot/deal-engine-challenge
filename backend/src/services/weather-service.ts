@@ -16,6 +16,20 @@ export const getWeatherData = async (lat: number, lon: number) => {
     return response.data;
 }
 
+
+export const getWeatherWithRetry = async (lat: number, lon: number, retries = 3): Promise<any> => {
+    try {
+        return await getWeatherData(lat, lon);
+    } catch (error) {
+        if (retries > 0) {
+            console.log(`Retrying... ${retries} retries left`);
+            return getWeatherWithRetry(lat, lon, retries - 1);
+        } else {
+            throw new Error("Failed to fetch weather data");
+        }
+    }
+}
+
 // Using a cache to store weather data
 
 // Set up a cache with a TTL of 1 hour
@@ -36,11 +50,13 @@ export const getCachedWeatherData = async (lat: number, lon: number) => {
 
     // If data is not cached, fetch it from the API
 
-    const weatherData = await getWeatherData(lat, lon);
+    const weatherData = await getWeatherWithRetry(lat, lon);
 
     // Cache the data for future requests
     weatherDataCache.set(cacheKey, weatherData);
 
     return weatherData;
 }
+
+
 

@@ -1,5 +1,5 @@
 import './App.css'
-
+import { useQuery } from "@tanstack/react-query"
 import {
   ChevronLeft,
   ChevronRight,
@@ -74,10 +74,31 @@ import {
   TooltipTrigger,
   TooltipProvider
 } from "@/components/ui/tooltip"
+import axios from 'axios'
 
 
 function App() {
 
+  // Polling Interval for client side data fetching
+  // const pollingInterval = 1000 * 60 // 1 minute
+
+ const parseTickets = async () => {
+    const response = await axios.post('/parse-tickets')
+    return response.data
+  }
+
+  const { isPending, error, data } = useQuery({
+    queryKey: ['tickets'],
+    queryFn: parseTickets,
+  });
+
+  if (isPending) return 'Loading...'
+
+      if (error) return 'An error has occurred: ' + error.message
+
+      console.log(data);
+
+  
 
   return (
     <TooltipProvider>

@@ -101,7 +101,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Batch the requests to avoid hitting the rate limit
 
-const getWeatherForAllTicketsInBatches = async (tickets: Ticket[], batchSize: number): Promise<WeatherReport[]> => {
+export const getWeatherForAllTicketsInBatches = async (tickets: Ticket[], batchSize: number): Promise<WeatherReport[]> => {
     const weatherReports: WeatherReport[] = [];
 
     // Split the tickets into batches of the specified size

@@ -63,6 +63,8 @@ export const getCachedWeatherData = async (lat: number, lon: number) => {
 
 // GET Weather for all tickets
 
+/// Remove this function later to avoid hitting the rate limit of the OpenWeather API
+
 // This function needs to improve performance by fetching weather data for all tickets in parallel using Promise.all
 
 // Fetch weather data for all tickets in parallel
@@ -91,5 +93,46 @@ export const getWeatherForAllTickets = async (tickets: Ticket[]): Promise<Weathe
    
 }
 
+// We need to adjust the batch size based on a safe number of tickets to avoid hitting the rate limit of the OpenWeather API.
+// For example, if the rate limit is 60 requests per minute, we can set the batch size to 30 tickets per batch to stay within the limit.
+
+// Helper function to delay execution for a specified time
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Batch the requests to avoid hitting the rate limit
+
+const getWeatherForAllTicketsInBatches = async (tickets: Ticket[], batchSize: number): Promise<WeatherReport[]> => {
+    const weatherReports: WeatherReport[] = [];
+
+    // Split the tickets into batches of the specified size
+
+    for (let i = 0; i < tickets.length; i += batchSize) {
+        const batch = tickets.slice(i, i + batchSize);
+
+        const weatherPromises = batch.map(async (ticket) => {
+            const originWeatherData = await getCachedWeatherData(ticket.originAirport.latitude, ticket.originAirport.longitude);
+            const destinationWeatherData = await getCachedWeatherData(ticket.destinationAirport.latitude, ticket.destinationAirport.longitude);
+            return {
+                ticket,
+                originWeather: originWeatherData,
+                destinationWeather: destinationWeatherData
+            } as WeatherReport;
+        });
+
+        const batchWeatherReports = await Promise.all(weatherPromises);
+        weatherReports.push(...batchWeatherReports);
+
+        if (i + batchSize < tickets.length) {
+            console.log("Delaying execution for 1 minute to avoid rate limit");
+            await delay(60000);
+        }
+
+        // Delay execution for 1 minute to avoid hitting the rate limit
+        await delay(60000);
+    }
+
+
+    return weatherReports;
+}
 
 

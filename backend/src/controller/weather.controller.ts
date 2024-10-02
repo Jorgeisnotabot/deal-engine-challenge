@@ -8,12 +8,6 @@ export const getWeatherReportsController = async (req: Request, res: Response): 
     try {
         const tickets: Ticket[] = req.body.tickets;
         const batchSize = 30;
-
-        // Assuming the CSV file is uploaded and accessible on the server
-        // const filePath = path.resolve("./backend/data/dataset.csv");
-
-        // Parse the CSV to get the array of tickets
-        // const tickets: Ticket[] = await parseTicketsData(filePath);
        
 
         if (!tickets || tickets.length === 0) {
@@ -32,6 +26,7 @@ export const getWeatherReportsController = async (req: Request, res: Response): 
             const batchWeatherReports = await getWeatherForAllTicketsInBatches(batch, batchSize);
             // Push the weather reports to the main array
             weatherReports.push(...batchWeatherReports);
+            console.log(weatherReports)
             // Send partial data to the client while waiting for the rest
             res.write(JSON.stringify(weatherReports));
         }

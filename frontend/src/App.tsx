@@ -2,12 +2,64 @@ import './App.css';
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import {
+
+  Package2,
+  PanelLeft,
+
+
+} from "lucide-react"
+// import { Badge } from "@/components/ui/badge"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  TooltipProvider
+} from "@/components/ui/tooltip"
 
 function App() {
   const [tickets, setTickets] = useState([]);
   const [parsed, setParsed] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Initialize totalPages state
+  const [weatherReports, setWeatherReports] = useState([]); // State for weather reports
+
 
 
   const parseTickets = async (page: number) => {
@@ -18,25 +70,44 @@ function App() {
     return response.data;
   };
 
+   // Fetch weather reports for parsed tickets
+   const fetchWeatherReports = async (tickets: any[]) => {
+    const response = await axios.post('http://localhost:8000/api/weather-reports', {
+      tickets: tickets,
+    });
+    return response.data;
+  };
+
+  // Fetch weather reports after tickets are parsed
+  useEffect(() => {
+    if (parsed && tickets.length > 0) {
+      fetchWeatherReports(tickets).then((weatherData) => {
+        setWeatherReports(weatherData); // Store fetched weather reports
+      }).catch((error) => {
+        console.error("Error fetching weather reports:", error);
+      });
+    }
+  }, [parsed, tickets]); // Trigger only when tickets are parsed
+
   const { isLoading, isError, error, data, isFetching, isPlaceholderData } =
     useQuery({
       queryKey: ['tickets', page],
       queryFn: () => parseTickets(page),
       placeholderData: keepPreviousData,// This keeps previous data when fetching the next page
-      staleTime: 5000, 
+      staleTime: 5000,
     });
 
-    // Use useEffect to update tickets and parsed state when data is fetched
+  // Use useEffect to update tickets and parsed state when data is fetched
   useEffect(() => {
     if (data) {
-      setTickets(data); // Update tickets state when new data is available
+      setTickets(data.tickets); // Update tickets state when new data is available
       setParsed(true);  // Mark parsed as true when data is successfully parsed
-      setTotalPages(data.totalPages); 
+      setTotalPages(data.totalPages);
     }
   }, [data]); // This effect runs when `data` changes
 
 
-   
+
 
 
   if (isLoading) return 'Loading...';
@@ -51,11 +122,252 @@ function App() {
         ) : isError ? (
           <div>Error: {JSON.stringify(error)}</div>
         ) : (
-          <div>{JSON.stringify(tickets)}</div>
+          <div>
+
+
+            <TooltipProvider>
+
+              <div className="flex min-h-screen w-full flex-col bg-muted/40">
+                <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+                  <nav className="flex flex-col items-center gap-4 px-2 sm:py-4">
+                    <a
+                      href="./"
+                      className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+                    >
+                      <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
+                      <span className="sr-only">Weather App</span>
+                    </a>
+
+
+
+
+                  </nav>
+
+                </aside>
+                <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+                  <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button size="icon" variant="outline" className="sm:hidden">
+                          <PanelLeft className="h-5 w-5" />
+                          <span className="sr-only">Toggle Menu</span>
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="sm:max-w-xs">
+                        <nav className="grid gap-6 text-lg font-medium">
+                          <a
+                            href="./"
+                            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+                          >
+                            <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
+                            <span className="sr-only">WeatherApp</span>
+                          </a>
+
+
+                        </nav>
+                      </SheetContent>
+                    </Sheet>
+                    <Breadcrumb className="hidden md:flex">
+                      <BreadcrumbList>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink asChild>
+                            <a href="/">Dashboard</a>
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+
+
+                      </BreadcrumbList>
+                    </Breadcrumb>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="overflow-hidden rounded-full"
+                        >
+
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </header>
+                  <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+                    <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                        <Card
+                          className="sm:col-span-2" x-chunk="dashboard-05-chunk-0"
+                        >
+                          <CardHeader className="pb-3">
+                            <CardTitle>Description</CardTitle>
+                            <CardDescription className="text-balance max-w-lg leading-relaxed">
+                            The fetching of each batch is one minute.
+                            </CardDescription>
+                          </CardHeader>
+
+                        </Card>
+                        <Card x-chunk="dashboard-05-chunk-1">
+                          <CardHeader className="pb-2">
+                            <CardDescription>Page</CardDescription>
+                            <CardTitle className="text-4xl">{page}</CardTitle>
+                          </CardHeader>
+
+                        </Card>
+
+                      </div>
+                      <Tabs defaultValue="week">
+                        <div className="flex items-center">
+                          <TabsList>
+                            <TabsTrigger value="week">Tickets</TabsTrigger>
+
+                          </TabsList>
+                          <div className="ml-auto flex items-center gap-2">
+
+
+                          </div>
+                        </div>
+                        <TabsContent value="week">
+                          <Card x-chunk="dashboard-05-chunk-3">
+                            <CardHeader className="px-7">
+                              <CardTitle>Weather</CardTitle>
+                              <CardDescription>
+                                Weather data for each ticket's origin and destination airports.
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Airline</TableHead>
+                                    <TableHead className="hidden sm:table-cell">
+                                      Flight Number
+                                    </TableHead>
+                                    <TableHead className="hidden sm:table-cell">
+                                      Origin
+                                    </TableHead>
+                                    <TableHead className="hidden sm:table-cell">
+                                      Destination
+                                    </TableHead>
+                                    <TableHead className="hidden md:table-cell">
+
+                                      Weather (Origin)
+                                    </TableHead>
+                                    <TableHead className="hidden md:table-cell">
+                                      Weather (Destination)
+                                    </TableHead>
+
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {
+                                    weatherReports && weatherReports.length > 0 ? (
+                                      <>
+
+                                      {
+                                        weatherReports.map((report: any, index: number) => (
+                                          <TableRow key={index} className="bg-accent">
+                                            <TableCell>
+
+                                              <div className="hidden text-sm text-muted-foreground md:inline">
+                                                {report.ticket.airline}
+                                              </div>
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                              {report.ticket.flightNumber}
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                              <Badge className="text-xs" variant="secondary">
+                                                {report.ticket.originCode} - {report.ticket.originAirport.name}
+                                              </Badge>
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell">
+                                              {(report.originWeather.main.temp - 273.15).toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell">
+                                              {report.ticket.destinationCode} - {report.ticket.destinationAirport.name}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                              {(report.destinationWeather.main.temp - 273.15).toFixed(2)}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))
+                                      }
+                                    </>
+                                    ) : (
+                                      <>
+
+                                      {
+                                        tickets.map((ticket: any, index: number) => (
+                                          <TableRow key={index} className="bg-accent">
+                                            <TableCell>
+
+                                              <div className="hidden text-sm text-muted-foreground md:inline">
+                                                {ticket.airline}
+                                              </div>
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                              {ticket.flightNumber}
+                                            </TableCell>
+                                            <TableCell className="hidden sm:table-cell">
+                                              <Badge className="text-xs" variant="secondary">
+                                                {ticket.originCode} - {ticket.originAirport.name}
+                                              </Badge>
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell">
+                                              {ticket.destinationCode} - {ticket.destinationAirport.name}
+                                            </TableCell>
+                                            <TableCell className="hidden md:table-cell">
+                                             Loading
+                                            </TableCell>
+                                            
+                                            <TableCell className="text-right">
+                                            Loading
+                                            </TableCell>
+                                          </TableRow>
+                                        ))
+                                      }
+                                    </>
+                                    )
+                                  }
+
+                                 
+
+                                </TableBody>
+                              </Table>
+                            </CardContent>
+                          </Card>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                    <div>
+
+                    </div>
+                  </main>
+                </div>
+              </div>
+            </TooltipProvider>
+
+            {/* Display weather reports */}
+          <div>
+            <h3>Weather Reports:</h3>
+            {weatherReports.length > 0 ? (
+              <p>Done</p>
+            ) : (
+              <p>Fetching weather reports... it takes 1 minute in order to avoid hitting </p>
+            )}
+          </div>
+
+
+          </div>
         )}
       </div>
       <span>Current Page: {page}</span>
-     
+
       {/* Previous Page Button */}
       <button
         onClick={() => setPage((old) => Math.max(old - 1, 1))} // Ensure minimum page is 1
@@ -83,583 +395,3 @@ function App() {
 
 export default App;
 
-
-
-
-
-
-
-// import './App.css'
-// import { keepPreviousData, useQuery } from '@tanstack/react-query'
-// import {
-//   ChevronLeft,
-//   ChevronRight,
-//   CreditCard,
-//   File,
-//   Home,
-//   ListFilter,
-//   MoreVertical,
-//   Package,
-//   Package2,
-//   PanelLeft,
-//   Search,
-
-//   ShoppingCart,
-//   Truck,
-
-// } from "lucide-react"
-// // import { Badge } from "@/components/ui/badge"
-// import {
-//   Breadcrumb,
-//   BreadcrumbItem,
-//   BreadcrumbLink,
-//   BreadcrumbList,
-//   BreadcrumbPage,
-//   BreadcrumbSeparator,
-// } from "@/components/ui/breadcrumb"
-// import { Button } from "@/components/ui/button"
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card"
-// import {
-//   DropdownMenu,
-//   DropdownMenuCheckboxItem,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu"
-// import { Input } from "@/components/ui/input"
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-// } from "@/components/ui/pagination"
-// import { Progress } from "@/components/ui/progress"
-// import { Separator } from "@/components/ui/separator"
-// import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-// import {
-//   Table,
-//   TableBody,
-
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table"
-// import {
-//   Tabs,
-//   TabsContent,
-//   TabsList,
-//   TabsTrigger,
-// } from "@/components/ui/tabs"
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipTrigger,
-//   TooltipProvider
-// } from "@/components/ui/tooltip"
-// import axios from 'axios'
-// import { useState, useEffect } from 'react'
-
-// function App() {
-
-
-
-
-//   // Polling Interval for client side data fetching
-//   // const pollingInterval = 1000 * 60 // 1 minute
-
-//   const [tickets, setTickets] = useState([])
-//   const [parsed, setParsed] = useState(false)
-//   const [page, setPage] = useState(1)
-  
-
-//   const parseTickets = async (page: Number) => {
-//     const response = await axios.post('http://localhost:8000/api/parse-tickets-in-batches', {
-//       filePath: './backend/data/dataset.csv',
-//       page: page
-//     })
-//     return response.data
-//   }
-
-//   const { isPending, isError, error, data, isFetching, isPlaceholderData } =
-//     useQuery({
-//       queryKey: ['tickets', page],
-//       queryFn: () => parseTickets(page),
-//       placeholderData: keepPreviousData,
-//     })
-
-
-//   if (isPending) return 'Loading...'
-
-//   if (error) return 'An error has occurred: ' + error.message
-
-//   if (data) {
-//     setTickets(data)
-//     setParsed(true)
-//     return (
-
-//       <>
-//         <div>
-//       {isPending ? (
-//         <div>Loading...</div>
-//       ) : isError ? (
-//         <div>Error: {JSON.stringify(error)}</div>
-//       ) : (
-//         <div>
-//           {
-//             JSON.stringify(data)
-//           }
-//         </div>
-//       )}
-//       <span>Current Page: {page + 1}</span>
-//       <button
-//         onClick={() => setPage((old) => Math.max(old - 1, 0))}
-//         disabled={page === 0}
-//       >
-//         Previous Page
-//       </button>
-//       <button
-//         onClick={() => {
-//           if (!isPlaceholderData && data.hasMore) {
-//             setPage((old) => old + 1)
-//           }
-//         }}
-//         // Disable the Next Page button until we know a next page is available
-//         disabled={isPlaceholderData || !data?.hasMore}
-//       >
-//         Next Page
-//       </button>
-//       {isFetching ? <span> Loading...</span> : null}
-//     </div>
-//       </>
-     
-//     )
-//   }
-
-
-
-
-// }
-
-// export default App
-
-
-//  // <TooltipProvider>
-
-//       //   <div className="flex min-h-screen w-full flex-col bg-muted/40">
-//       //     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-//       //       <nav className="flex flex-col items-center gap-4 px-2 sm:py-4">
-//       //         <a
-//       //           href="#"
-//       //           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-//       //         >
-//       //           <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
-//       //           <span className="sr-only">Acme Inc</span>
-//       //         </a>
-//       //         <Tooltip>
-//       //           <TooltipTrigger asChild>
-//       //             <a
-//       //               href="#"
-//       //               className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-//       //             >
-//       //               <Home className="h-5 w-5" />
-//       //               <span className="sr-only">Dashboard</span>
-//       //             </a>
-//       //           </TooltipTrigger>
-//       //           <TooltipContent side="right">Dashboard</TooltipContent>
-//       //         </Tooltip>
-//       //         <Tooltip>
-//       //           <TooltipTrigger asChild>
-//       //             <a
-//       //               href="#"
-//       //               className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-//       //             >
-//       //               <ShoppingCart className="h-5 w-5" />
-//       //               <span className="sr-only">Orders</span>
-//       //             </a>
-//       //           </TooltipTrigger>
-//       //           <TooltipContent side="right">Orders</TooltipContent>
-//       //         </Tooltip>
-//       //         <Tooltip>
-//       //           <TooltipTrigger asChild>
-//       //             <a
-//       //               href="#"
-//       //               className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-//       //             >
-//       //               <Package className="h-5 w-5" />
-//       //               <span className="sr-only">Products</span>
-//       //             </a>
-//       //           </TooltipTrigger>
-//       //           <TooltipContent side="right">Products</TooltipContent>
-//       //         </Tooltip>
-
-
-//       //       </nav>
-//       //       <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-4">
-//       //         <Tooltip>
-
-//       //           <TooltipContent side="right">Settings</TooltipContent>
-//       //         </Tooltip>
-//       //       </nav>
-//       //     </aside>
-//       //     <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-//       //       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-//       //         <Sheet>
-//       //           <SheetTrigger asChild>
-//       //             <Button size="icon" variant="outline" className="sm:hidden">
-//       //               <PanelLeft className="h-5 w-5" />
-//       //               <span className="sr-only">Toggle Menu</span>
-//       //             </Button>
-//       //           </SheetTrigger>
-//       //           <SheetContent side="left" className="sm:max-w-xs">
-//       //             <nav className="grid gap-6 text-lg font-medium">
-//       //               <a
-//       //                 href="#"
-//       //                 className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-//       //               >
-//       //                 <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-//       //                 <span className="sr-only">WeatherApp</span>
-//       //               </a>
-//       //               <a
-//       //                 href="#"
-//       //                 className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-//       //               >
-//       //                 <Home className="h-5 w-5" />
-//       //                 Dashboard
-//       //               </a>
-
-//       //             </nav>
-//       //           </SheetContent>
-//       //         </Sheet>
-//       //         <Breadcrumb className="hidden md:flex">
-//       //           <BreadcrumbList>
-//       //             <BreadcrumbItem>
-//       //               <BreadcrumbLink asChild>
-//       //                 <a href="/">Dashboard</a>
-//       //               </BreadcrumbLink>
-//       //             </BreadcrumbItem>
-//       //             <BreadcrumbSeparator />
-
-//       //             <BreadcrumbSeparator />
-//       //             <BreadcrumbItem>
-//       //               <BreadcrumbPage>Recent Orders</BreadcrumbPage>
-//       //             </BreadcrumbItem>
-//       //           </BreadcrumbList>
-//       //         </Breadcrumb>
-//       //         <div className="relative ml-auto flex-1 md:grow-0">
-//       //           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-//       //           <Input
-//       //             type="search"
-//       //             placeholder="Search..."
-//       //             className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-//       //           />
-//       //         </div>
-//       //         <DropdownMenu>
-//       //           <DropdownMenuTrigger asChild>
-//       //             <Button
-//       //               variant="outline"
-//       //               size="icon"
-//       //               className="overflow-hidden rounded-full"
-//       //             >
-
-//       //             </Button>
-//       //           </DropdownMenuTrigger>
-//       //           <DropdownMenuContent align="end">
-//       //             <DropdownMenuLabel>My Account</DropdownMenuLabel>
-//       //             <DropdownMenuSeparator />
-//       //             <DropdownMenuItem>Settings</DropdownMenuItem>
-//       //             <DropdownMenuItem>Support</DropdownMenuItem>
-//       //             <DropdownMenuSeparator />
-//       //             <DropdownMenuItem>Logout</DropdownMenuItem>
-//       //           </DropdownMenuContent>
-//       //         </DropdownMenu>
-//       //       </header>
-//       //       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-//       //         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-//       //           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-//       //             <Card
-//       //               className="sm:col-span-2" x-chunk="dashboard-05-chunk-0"
-//       //             >
-//       //               <CardHeader className="pb-3">
-//       //                 <CardTitle>Your Orders</CardTitle>
-//       //                 <CardDescription className="text-balance max-w-lg leading-relaxed">
-//       //                   Introducing Our Dynamic Orders Dashboard for Seamless
-//       //                   Management and Insightful Analysis.
-//       //                 </CardDescription>
-//       //               </CardHeader>
-//       //               <CardFooter>
-//       //                 <Button>Create New Order</Button>
-//       //               </CardFooter>
-//       //             </Card>
-//       //             <Card x-chunk="dashboard-05-chunk-1">
-//       //               <CardHeader className="pb-2">
-//       //                 <CardDescription>This Week</CardDescription>
-//       //                 <CardTitle className="text-4xl">$1,329</CardTitle>
-//       //               </CardHeader>
-//       //               <CardContent>
-//       //                 <div className="text-xs text-muted-foreground">
-//       //                   +25% from last week
-//       //                 </div>
-//       //               </CardContent>
-//       //               <CardFooter>
-//       //                 <Progress value={25} aria-label="25% increase" />
-//       //               </CardFooter>
-//       //             </Card>
-//       //             <Card x-chunk="dashboard-05-chunk-2">
-//       //               <CardHeader className="pb-2">
-//       //                 <CardDescription>This Month</CardDescription>
-//       //                 <CardTitle className="text-4xl">$5,329</CardTitle>
-//       //               </CardHeader>
-//       //               <CardContent>
-//       //                 <div className="text-xs text-muted-foreground">
-//       //                   +10% from last month
-//       //                 </div>
-//       //               </CardContent>
-//       //               <CardFooter>
-//       //                 <Progress value={12} aria-label="12% increase" />
-//       //               </CardFooter>
-//       //             </Card>
-//       //           </div>
-//       //           <Tabs defaultValue="week">
-//       //             <div className="flex items-center">
-//       //               <TabsList>
-//       //                 <TabsTrigger value="week">Week</TabsTrigger>
-//       //                 <TabsTrigger value="month">Month</TabsTrigger>
-//       //                 <TabsTrigger value="year">Year</TabsTrigger>
-//       //               </TabsList>
-//       //               <div className="ml-auto flex items-center gap-2">
-//       //                 <DropdownMenu>
-//       //                   <DropdownMenuTrigger asChild>
-//       //                     <Button
-//       //                       variant="outline"
-//       //                       size="sm"
-//       //                       className="h-7 gap-1 text-sm"
-//       //                     >
-//       //                       <ListFilter className="h-3.5 w-3.5" />
-//       //                       <span className="sr-only sm:not-sr-only">Filter</span>
-//       //                     </Button>
-//       //                   </DropdownMenuTrigger>
-//       //                   <DropdownMenuContent align="end">
-//       //                     <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-//       //                     <DropdownMenuSeparator />
-//       //                     <DropdownMenuCheckboxItem checked>
-//       //                       Fulfilled
-//       //                     </DropdownMenuCheckboxItem>
-//       //                     <DropdownMenuCheckboxItem>
-//       //                       Declined
-//       //                     </DropdownMenuCheckboxItem>
-//       //                     <DropdownMenuCheckboxItem>
-//       //                       Refunded
-//       //                     </DropdownMenuCheckboxItem>
-//       //                   </DropdownMenuContent>
-//       //                 </DropdownMenu>
-//       //                 <Button
-//       //                   size="sm"
-//       //                   variant="outline"
-//       //                   className="h-7 gap-1 text-sm"
-//       //                 >
-//       //                   <File className="h-3.5 w-3.5" />
-//       //                   <span className="sr-only sm:not-sr-only">Export</span>
-//       //                 </Button>
-//       //               </div>
-//       //             </div>
-//       //             <TabsContent value="week">
-//       //               <Card x-chunk="dashboard-05-chunk-3">
-//       //                 <CardHeader className="px-7">
-//       //                   <CardTitle>Orders</CardTitle>
-//       //                   <CardDescription>
-//       //                     Recent orders from your store.
-//       //                   </CardDescription>
-//       //                 </CardHeader>
-//       //                 <CardContent>
-//       //                   <Table>
-//       //                     <TableHeader>
-//       //                       <TableRow>
-//       //                         <TableHead>Airline</TableHead>
-//       //                         <TableHead className="hidden sm:table-cell">
-//       //                           Flight Number
-//       //                         </TableHead>
-//       //                         <TableHead className="hidden sm:table-cell">
-//       //                           Origin
-//       //                         </TableHead>
-//       //                         <TableHead className="hidden md:table-cell">
-//       //                           Destination
-//       //                         </TableHead>
-//       //                         <TableHead className="text-right">Amount</TableHead>
-//       //                       </TableRow>
-//       //                     </TableHeader>
-//       //                     <TableBody>
-
-//       //                       {parsed && tickets && (
-//       //                         <>
-//       //                           {JSON.stringify(tickets)}
-//       //                         </>
-//       //                       )}
-
-//       //                     </TableBody>
-//       //                   </Table>
-//       //                 </CardContent>
-//       //               </Card>
-//       //             </TabsContent>
-//       //           </Tabs>
-//       //         </div>
-//       //         <div>
-//       //           <Card
-//       //             className="overflow-hidden" x-chunk="dashboard-05-chunk-4"
-//       //           >
-//       //             <CardHeader className="flex flex-row items-start bg-muted/50">
-//       //               <div className="grid gap-0.5">
-//       //                 <CardTitle className="group flex items-center gap-2 text-lg">
-//       //                   Order Oe31b70H
-//       //                   <button onClick={() => setBatchIndex((prev) => Math.max(prev - 1, 0))}>Previous</button>
-//       //                   <button onClick={() => setBatchIndex(batchIndex + 1)}>Next</button>
-//       //                 </CardTitle>
-//       //                 <CardDescription>Date: November 23, 2023</CardDescription>
-//       //               </div>
-//       //               <div className="ml-auto flex items-center gap-1">
-//       //                 <Button size="sm" variant="outline" className="h-8 gap-1">
-//       //                   <Truck className="h-3.5 w-3.5" />
-//       //                   <span className="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-//       //                     Track Order
-//       //                   </span>
-//       //                 </Button>
-//       //                 <DropdownMenu>
-//       //                   <DropdownMenuTrigger asChild>
-//       //                     <Button size="icon" variant="outline" className="h-8 w-8">
-//       //                       <MoreVertical className="h-3.5 w-3.5" />
-//       //                       <span className="sr-only">More</span>
-//       //                     </Button>
-//       //                   </DropdownMenuTrigger>
-//       //                   <DropdownMenuContent align="end">
-//       //                     <DropdownMenuItem>Edit</DropdownMenuItem>
-//       //                     <DropdownMenuItem>Export</DropdownMenuItem>
-//       //                     <DropdownMenuSeparator />
-//       //                     <DropdownMenuItem>Trash</DropdownMenuItem>
-//       //                   </DropdownMenuContent>
-//       //                 </DropdownMenu>
-//       //               </div>
-//       //             </CardHeader>
-//       //             <CardContent className="p-6 text-sm">
-//       //               <div className="grid gap-3">
-//       //                 <div className="font-semibold">Order Details</div>
-//       //                 <ul className="grid gap-3">
-//       //                   <li className="flex items-center justify-between">
-//       //                     <span className="text-muted-foreground">
-//       //                       Glimmer Lamps x <span>2</span>
-//       //                     </span>
-//       //                     <span>$250.00</span>
-//       //                   </li>
-//       //                   <li className="flex items-center justify-between">
-//       //                     <span className="text-muted-foreground">
-//       //                       Aqua Filters x <span>1</span>
-//       //                     </span>
-//       //                     <span>$49.00</span>
-//       //                   </li>
-//       //                 </ul>
-//       //                 <Separator className="my-2" />
-//       //                 <ul className="grid gap-3">
-//       //                   <li className="flex items-center justify-between">
-//       //                     <span className="text-muted-foreground">Subtotal</span>
-//       //                     <span>$299.00</span>
-//       //                   </li>
-//       //                   <li className="flex items-center justify-between">
-//       //                     <span className="text-muted-foreground">Shipping</span>
-//       //                     <span>$5.00</span>
-//       //                   </li>
-//       //                   <li className="flex items-center justify-between">
-//       //                     <span className="text-muted-foreground">Tax</span>
-//       //                     <span>$25.00</span>
-//       //                   </li>
-//       //                   <li className="flex items-center justify-between font-semibold">
-//       //                     <span className="text-muted-foreground">Total</span>
-//       //                     <span>$329.00</span>
-//       //                   </li>
-//       //                 </ul>
-//       //               </div>
-//       //               <Separator className="my-4" />
-//       //               <div className="grid grid-cols-2 gap-4">
-//       //                 <div className="grid gap-3">
-//       //                   <div className="font-semibold">Shipping Information</div>
-//       //                   <address className="grid gap-0.5 not-italic text-muted-foreground">
-//       //                     <span>Liam Johnson</span>
-//       //                     <span>1234 Main St.</span>
-//       //                     <span>Anytown, CA 12345</span>
-//       //                   </address>
-//       //                 </div>
-//       //                 <div className="grid auto-rows-max gap-3">
-//       //                   <div className="font-semibold">Billing Information</div>
-//       //                   <div className="text-muted-foreground">
-//       //                     Same as shipping address
-//       //                   </div>
-//       //                 </div>
-//       //               </div>
-//       //               <Separator className="my-4" />
-//       //               <div className="grid gap-3">
-//       //                 <div className="font-semibold">Customer Information</div>
-//       //                 <dl className="grid gap-3">
-//       //                   <div className="flex items-center justify-between">
-//       //                     <dt className="text-muted-foreground">Customer</dt>
-//       //                     <dd>Liam Johnson</dd>
-//       //                   </div>
-//       //                   <div className="flex items-center justify-between">
-//       //                     <dt className="text-muted-foreground">Email</dt>
-//       //                     <dd>
-//       //                       <a href="mailto:">liam@acme.com</a>
-//       //                     </dd>
-//       //                   </div>
-//       //                   <div className="flex items-center justify-between">
-//       //                     <dt className="text-muted-foreground">Phone</dt>
-//       //                     <dd>
-//       //                       <a href="tel:">+1 234 567 890</a>
-//       //                     </dd>
-//       //                   </div>
-//       //                 </dl>
-//       //               </div>
-//       //               <Separator className="my-4" />
-//       //               <div className="grid gap-3">
-//       //                 <div className="font-semibold">Payment Information</div>
-//       //                 <dl className="grid gap-3">
-//       //                   <div className="flex items-center justify-between">
-//       //                     <dt className="flex items-center gap-1 text-muted-foreground">
-//       //                       <CreditCard className="h-4 w-4" />
-//       //                       Visa
-//       //                     </dt>
-//       //                     <dd>**** **** **** 4532</dd>
-//       //                   </div>
-//       //                 </dl>
-//       //               </div>
-//       //             </CardContent>
-//       //             <CardFooter className="flex flex-row items-center border-t bg-muted/50 px-6 py-3">
-//       //               <div className="text-xs text-muted-foreground">
-//       //                 Updated <time dateTime="2023-11-23">November 23, 2023</time>
-//       //               </div>
-//       //               <Pagination className="ml-auto mr-0 w-auto">
-//       //                 <PaginationContent>
-//       //                   <PaginationItem>
-//       //                     <Button size="icon" variant="outline" className="h-6 w-6">
-//       //                       <ChevronLeft className="h-3.5 w-3.5" />
-//       //                       <span className="sr-only">Previous Order</span>
-//       //                     </Button>
-//       //                   </PaginationItem>
-//       //                   <PaginationItem>
-//       //                     <Button size="icon" variant="outline" className="h-6 w-6">
-//       //                       <ChevronRight className="h-3.5 w-3.5" />
-//       //                       <span className="sr-only">Next Order</span>
-//       //                     </Button>
-//       //                   </PaginationItem>
-//       //                 </PaginationContent>
-//       //               </Pagination>
-//       //             </CardFooter>
-//       //           </Card>
-//       //         </div>
-//       //       </main>
-//       //     </div>
-//       //   </div>
-//       // </TooltipProvider>

@@ -23,5 +23,5 @@ app.get("/", (req, res) => {
 app.use(express.json());
 // Use the weather routes
 app.use("/api", weatherRoutes);
-app.use(ticketRouter);
+app.use("/api",ticketRouter);
 app.use(airportRoute);
